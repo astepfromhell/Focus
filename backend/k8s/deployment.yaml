@@ -1,0 +1,84 @@
+# K3s 部署配置（与 k8s 配置相同）
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: focus-backend
+  labels:
+    app: focus-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: focus-backend
+  template:
+    metadata:
+      labels:
+        app: focus-backend
+      # Prometheus 监控注解
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: focus-backend
+          image: focus-backend:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+            - name: DB_HOST
+              value: "172.29.5.31"
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USER
+              value: "root"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: db-password
+            - name: DB_NAME
+              value: "focus_app"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: jwt-secret
+            - name: JWT_EXPIRE
+              value: "7d"
+          # 健康检查
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: focus-backend-service
+  labels:
+    app: focus-backend
+spec:
+  type: NodePort
+  selector:
+    app: focus-backend
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30080
+      name: http

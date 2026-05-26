@@ -1,0 +1,89 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# GitLab CI/CD — Shell Runner + Docker 本机部署
+# 适用环境：Ubuntu 20.04，无 Kubernetes
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# 需要在 GitLab 项目 Settings → CI/CD → Variables 中配置的变量：
+#   DB_HOST        填 focus-mysql（容器名，同网络内直接通信）
+#   DB_PORT        填 3306
+#   DB_USER        填 focus_user
+#   DB_PASSWORD    填你设的业务密码
+#   DB_NAME        填 focus_app
+#   JWT_SECRET     填你的 JWT 密钥
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+stages:
+  - build
+  - deploy
+
+variables:
+  IMAGE_NAME: "focus-backend"
+  IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
+  CONTAINER_NAME: "focus-backend"
+  APP_PORT: "3000"
+  HOST_PORT: "3000"
+
+# ── Stage 1: build ────────────────────────────────────────────────────────────
+build-image:
+  stage: build
+  tags:
+    - shell
+  script:
+    - echo "🔨 构建 Docker 镜像 $IMAGE_NAME:$IMAGE_TAG ..."
+    - |
+      docker build \
+        --build-arg NODE_ENV=production \
+        --tag $IMAGE_NAME:$IMAGE_TAG \
+        --tag $IMAGE_NAME:latest \
+        -f backend/Dockerfile \
+        .
+    - echo "✅ 镜像构建完成"
+    - |
+      OLD_IMAGES=$(docker images $IMAGE_NAME --format "{{.Tag}}" \
+        | grep -v latest | sort -r | tail -n +4)
+      if [ -n "$OLD_IMAGES" ]; then
+        echo "🗑️  清理旧镜像: $OLD_IMAGES"
+        echo "$OLD_IMAGES" | xargs -I{} docker rmi $IMAGE_NAME:{} || true
+      fi
+  only:
+    - main
+
+# ── Stage 2: deploy ───────────────────────────────────────────────────────────
+deploy:
+  stage: deploy
+  tags:
+    - shell
+  needs:
+    - build-image
+  script:
+    - echo "🚀 开始部署 $IMAGE_NAME:$IMAGE_TAG ..."
+    - docker stop $CONTAINER_NAME || true
+    - docker rm   $CONTAINER_NAME || true
+    - |
+      docker run -d \
+        --name $CONTAINER_NAME \
+        --network focus-network \
+        --restart unless-stopped \
+        -p $HOST_PORT:$APP_PORT \
+        -e NODE_ENV=production \
+        -e DB_HOST="$DB_HOST" \
+        -e DB_PORT="$DB_PORT" \
+        -e DB_USER="$DB_USER" \
+        -e DB_PASSWORD="$DB_PASSWORD" \
+        -e DB_NAME="$DB_NAME" \
+        -e JWT_SECRET="$JWT_SECRET" \
+        $IMAGE_NAME:$IMAGE_TAG
+    - sleep 8
+    - |
+      STATUS=$(docker inspect --format='{{.State.Status}}' $CONTAINER_NAME)
+      if [ "$STATUS" != "running" ]; then
+        echo "❌ 容器启动失败，状态: $STATUS"
+        echo "--- 容器日志 ---"
+        docker logs --tail 50 $CONTAINER_NAME
+        exit 1
+      fi
+    - echo "✅ 部署完成！版本$IMAGE_TAG，端口 $HOST_PORT"
+    - docker ps --filter name=$CONTAINER_NAME
+  only:
+    - main

@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: focus-backend-monitor
+  namespace: monitoring
+  labels:
+    release: prometheus  # 需要与 Helm release 名称匹配
+spec:
+  selector:
+    matchLabels:
+      app: focus-backend
+  namespaceSelector:
+    matchNames:
+      - default  # 你的应用所在的命名空间
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

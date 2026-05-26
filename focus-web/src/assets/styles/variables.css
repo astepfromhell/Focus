@@ -1,0 +1,60 @@
+/* variables.css - 莫兰迪绿色系 */
+:root {
+    /* 主色调 - 自然绿 */
+    --primary: #92A681;
+    --primary-light: #C6D8B7;
+    --primary-dark: #7A9A6A;
+    --primary-container: #E8F5E0;
+    --on-primary: #FFFFFF;
+
+    /* 功能色 */
+    --work-color: #FF6B6B;      /* 专注状态 - 番茄红 */
+    --break-color: #4ECDC4;     /* 休息状态 - 青色 */
+    --success: #4CAF50;
+    --warning: #FFC107;
+    --error: #DC2626;
+
+    /* 优先级颜色 */
+    --priority-high: #FF6B6B;
+    --priority-medium: #FFA726;
+    --priority-low: #66BB6A;
+
+    /* 背景色 */
+    --bg-primary: #F2F6EA;
+    --bg-secondary: #EAF0E0;
+    --bg-white: #FFFFFF;
+    --bg-card: #FFFFFF;
+
+    /* 文字色 */
+    --text-primary: #2C3E2E;
+    --text-secondary: #6A7B6E;
+    --text-hint: #9CA3AF;
+
+    /* 边框色 */
+    --border-light: #CFDEC4;
+    --border-default: #D1D5DB;
+
+    /* 阴影 */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+    /* 圆角 */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+
+    /* 便签颜色 */
+    --note-yellow: #fffab3;
+    --note-orange: #ffca91;
+    --note-green: #b8d5b8;
+    --note-blue: #aacce8;
+    --note-brown: #a18e7f;
+    --note-pink: #fac3d5;
+    --note-purple: #d6b4df;
+    --note-teal: #98b1af;
+    --note-red: #ffb2b2;
+    --note-gray: #c1c1c1;
+}

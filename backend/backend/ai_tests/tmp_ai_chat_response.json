@@ -1,0 +1,1 @@
+{"success":true,"data":{"reply":"好的，我已经帮你创建了任务「提交周报」📌","intentType":"create","actionData":{"actionType":"create_task","data":{"title":"提交周报","description":"","dueDate":"2026-01-22T15:00:00.000Z","priority":"high","tags":[]}},"conversationId":"conv_1768975846894_gsl3x6ii4","messageId":2}}
